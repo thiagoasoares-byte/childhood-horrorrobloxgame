@@ -1,0 +1,23 @@
+# Roblox Studio place files generated/exported locally
+/banzo.rbxlx
+/Place1.rbxl
+
+# Roblox Studio lock files
+/*.rbxlx.lock
+/*.rbxl.lock
+
+# Rojo generated files
+/sourcemap.json
+
+# Local editor and operating-system files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Logs, temporary files, and local environment values
+*.log
+*.tmp
+.env
+.env.*
+!.env.example

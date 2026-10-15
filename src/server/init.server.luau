@@ -1,0 +1,11 @@
+local FearService = require(script.FearService)
+local OrderService = require(script.OrderService)
+local PizzeriaBuilder = require(script.PizzeriaBuilder)
+local NightDirector = require(script.NightDirector)
+local EntityAppearanceService = require(script.EntityAppearanceService)
+
+FearService.init()
+NightDirector.init()
+OrderService.init(NightDirector.completeOrder)
+PizzeriaBuilder.create(OrderService.interact)
+EntityAppearanceService.init()

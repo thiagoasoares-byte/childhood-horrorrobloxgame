@@ -105,3 +105,4 @@ escurecimento da tela e sons potencialmente altos. A versão publicada deve
 exibir avisos apropriados e oferecer opções para reduzir efeitos visuais e
 sons intensos quando possível.
 # childhood-horrorrobloxgame
+# childhood-horrorrobloxgame
