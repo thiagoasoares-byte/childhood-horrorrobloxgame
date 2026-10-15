@@ -1,0 +1,7 @@
+std = "roblox"
+
+[config]
+exclude = ["docs/**"]
+
+[lints]
+unused_variable = "allow"

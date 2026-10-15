@@ -8,6 +8,10 @@
 
 # Rojo generated files
 /sourcemap.json
+/build.rbxlx
+
+# Wally dependencies
+/Packages/
 
 # Local editor and operating-system files
 .vscode/

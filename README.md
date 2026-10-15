@@ -25,7 +25,7 @@ próprio servidor começam a ficar cada vez mais errados.
 ## Estado atual
 
 O projeto está em desenvolvimento e usa o roadmap definido em
-[`spec/MODULOS_IMPLEMENTACAO.md`](./spec/MODULOS_IMPLEMENTACAO.md):
+[`docs/MODULOS_IMPLEMENTACAO.md`](./docs/MODULOS_IMPLEMENTACAO.md):
 
 1. Protótipo visual em primeira pessoa e sistema de Medo.
 2. Loop da Pizzaria Saudade, noite 1.
@@ -42,9 +42,11 @@ O projeto está em desenvolvimento e usa o roadmap definido em
 │   ├── client/    # Câmera, HUD, efeitos VHS e renderização local
 │   ├── server/    # Medo, pedidos, pizzaria, noites e aparições
 │   └── shared/    # Remotes e configurações compartilhadas
-├── spec/          # GDD, roadmap técnico e referências de arte
-├── script/        # Scripts auxiliares
+├── docs/          # GDD, roadmap técnico, diagramas e scripts legados
+├── assets/        # Arquivos-fonte e modelos exportados
+├── .agents/       # Skills e instruções para agentes
 ├── aftman.toml    # Ferramentas gerenciadas pelo Aftman
+├── rokit.toml      # Toolchain declarativa alternativa
 └── default.project.json
 ```
 
@@ -90,11 +92,11 @@ definidos nesse arquivo.
 
 ## Referências
 
-- [`spec/GDD_Saudade.md`](./spec/GDD_Saudade.md): conceito, história e loop
+- [`docs/GDD_Saudade.md`](./docs/GDD_Saudade.md): conceito, história e loop
   de jogo.
-- [`spec/MODULOS_IMPLEMENTACAO.md`](./spec/MODULOS_IMPLEMENTACAO.md): módulos,
+- [`docs/MODULOS_IMPLEMENTACAO.md`](./docs/MODULOS_IMPLEMENTACAO.md): módulos,
   APIs e critérios de aceite.
-- [`spec/ARTE_PROMPTS.md`](./spec/ARTE_PROMPTS.md): referências para direção
+- [`docs/ARTE_PROMPTS.md`](./docs/ARTE_PROMPTS.md): referências para direção
   de arte.
 - [`default.project.json`](./default.project.json): configuração do Rojo.
 

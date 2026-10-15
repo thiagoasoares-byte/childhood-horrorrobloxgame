@@ -1,0 +1,22 @@
+name: Roblox project checks
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: Roblox/setup-foreman@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          flags: --rokit
+
+      - name: Build Rojo project
+        run: rojo build default.project.json --output build.rbxlx
+
+      - name: Validate Wally manifest
+        run: wally install

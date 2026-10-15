@@ -79,7 +79,7 @@ Ordem do roadmap GDD §9: protótipo visual → pizzaria noite 1 → medo/apari�
 ## Prompt de geração (copiar por módulo)
 
 ```
-Contexto fixo: spec/MODULOS_IMPLEMENTACAO.md + GDD_Saudade.md + diagramas_visual_v2.html.
+Contexto fixo: docs/MODULOS_IMPLEMENTACAO.md + GDD_Saudade.md + diagramas_visual_v2.html.
 Implemente apenas o módulo M<N> descrito acima.
 Stack: Rojo 7, Luau, FilteringEnabled, pastas src/shared, src/server, src/client.
 Não copiar IPs (WPP, mascotes, telas de erro Roblox).
