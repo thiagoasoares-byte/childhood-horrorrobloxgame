@@ -2,46 +2,44 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
+local FearService = require(script.Parent.FearService)
 local Remotes = require(ReplicatedStorage.Shared.Remotes)
-local Settings = require(ReplicatedStorage.Shared.Settings)
+local VisualConfig = require(ReplicatedStorage.Shared.VisualConfig)
 
-local WINDOW_SECONDS = 2
-local MAX_PER_WINDOW = 5
+local MIN_INTERVAL = 0.25
 
-local stored: { [Player]: Settings.Settings } = {}
-local windows: { [Player]: { start: number, count: number } } = {}
+local settings: { [Player]: VisualConfig.Settings } = {}
+local lastAt: { [Player]: number } = {}
 
 local SettingsService = {}
 
-function SettingsService.get(player: Player): Settings.Settings
-	return stored[player] or Settings.defaults()
-end
-
-local function allowed(player: Player): boolean
-	local now = os.clock()
-	local window = windows[player]
-	if window == nil or now - window.start >= WINDOW_SECONDS then
-		windows[player] = { start = now, count = 1 }
-		return true
-	end
-	window.count += 1
-	return window.count <= MAX_PER_WINDOW
+function SettingsService.get(player: Player): VisualConfig.Settings
+	return settings[player] or VisualConfig.DEFAULT_SETTINGS
 end
 
 function SettingsService.start()
 	Remotes.SettingsChanged.OnServerEvent:Connect(function(player, payload)
-		if not allowed(player) then
+		local now = os.clock()
+		if now - (lastAt[player] or -math.huge) < MIN_INTERVAL then
 			return
 		end
-		local clean = Settings.sanitize(payload)
-		if clean then
-			stored[player] = clean
+		lastAt[player] = now
+
+		local clean = VisualConfig.sanitizeSettings(payload)
+		if not clean then
+			return
+		end
+		local isFirst = settings[player] == nil
+		settings[player] = clean
+		-- The first valid message means the client is listening, so the current fear level can be delivered.
+		if isFirst then
+			FearService.sync(player)
 		end
 	end)
 
 	Players.PlayerRemoving:Connect(function(player)
-		stored[player] = nil
-		windows[player] = nil
+		settings[player] = nil
+		lastAt[player] = nil
 	end)
 end
 

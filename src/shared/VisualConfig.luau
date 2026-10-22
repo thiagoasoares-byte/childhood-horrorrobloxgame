@@ -10,9 +10,22 @@ export type FearSample = {
 }
 
 export type QualityName = "high" | "medium" | "low"
+export type QualityMode = "auto" | QualityName
+
+export type Settings = {
+	vhsFrame: boolean,
+	scanlines: boolean,
+	vignette: boolean,
+	colorGrade: boolean,
+	blur: "full" | "reduced" | "off",
+	reduceMotion: boolean,
+	brightness: number,
+	quality: QualityMode,
+}
 
 export type QualityProfile = {
 	blurMax: number,
+	scanlineCount: number,
 	noiseFps: number,
 	aberration: "animated" | "static" | "off",
 	posterize: boolean,
@@ -73,11 +86,67 @@ local ANCHORS: { { at: number, sample: FearSample } } = {
 
 -- blurMax values are provisional until measured on the P5 reference phone.
 local QUALITY: { [QualityName]: QualityProfile } = {
-	high = { blurMax = 24, noiseFps = 12, aberration = "animated", posterize = true },
-	medium = { blurMax = 14, noiseFps = 6, aberration = "static", posterize = true },
-	low = { blurMax = 6, noiseFps = 0, aberration = "off", posterize = false },
+	high = {
+		blurMax = 24,
+		scanlineCount = 120,
+		noiseFps = 12,
+		aberration = "animated",
+		posterize = true,
+	},
+	medium = {
+		blurMax = 14,
+		scanlineCount = 90,
+		noiseFps = 6,
+		aberration = "static",
+		posterize = true,
+	},
+	low = { blurMax = 6, scanlineCount = 60, noiseFps = 0, aberration = "off", posterize = false },
 }
 VisualConfig.QUALITY = QUALITY
+
+VisualConfig.DEFAULT_SETTINGS = table.freeze({
+	vhsFrame = true,
+	scanlines = true,
+	vignette = true,
+	colorGrade = true,
+	blur = "full",
+	reduceMotion = false,
+	brightness = 0,
+	quality = "auto",
+} :: Settings)
+
+local BOOLEAN_KEYS = { "vhsFrame", "scanlines", "vignette", "colorGrade", "reduceMotion" }
+local BLUR_MODES = { full = true, reduced = true, off = true }
+local QUALITY_MODES = { auto = true, high = true, medium = true, low = true }
+
+-- Rejects the whole payload on any wrong type or out-of-range value; used by the server for client input.
+function VisualConfig.sanitizeSettings(raw: any): Settings?
+	if type(raw) ~= "table" then
+		return nil
+	end
+	for _, key in BOOLEAN_KEYS do
+		if type(raw[key]) ~= "boolean" then
+			return nil
+		end
+	end
+	local brightness = raw.brightness
+	if type(brightness) ~= "number" or not (brightness >= 0 and brightness <= 1) then
+		return nil
+	end
+	if BLUR_MODES[raw.blur] ~= true or QUALITY_MODES[raw.quality] ~= true then
+		return nil
+	end
+	return {
+		vhsFrame = raw.vhsFrame,
+		scanlines = raw.scanlines,
+		vignette = raw.vignette,
+		colorGrade = raw.colorGrade,
+		blur = raw.blur,
+		reduceMotion = raw.reduceMotion,
+		brightness = brightness,
+		quality = raw.quality,
+	}
+end
 
 local function lerp(a: number, b: number, t: number): number
 	return a + (b - a) * t

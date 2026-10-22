@@ -4,7 +4,6 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local VisualConfig = require(ReplicatedStorage.Shared.VisualConfig)
 
-local SCANLINE_COUNT = 120
 local VIGNETTE_DEPTH = 0.35 -- fraction of the screen each edge gradient covers
 local BLINK_HALF_PERIOD = 0.5 -- one full on/off cycle per second, below the 3 flashes per second limit
 local MARGIN = 28
@@ -75,7 +74,8 @@ local function buildScanlines(count: number)
 	end
 end
 
-buildScanlines(SCANLINE_COUNT)
+local scanlineCount = VisualConfig.QUALITY.high.scanlineCount
+buildScanlines(scanlineCount)
 
 local padding = Instance.new("UIPadding")
 padding.PaddingTop = UDim.new(0, MARGIN)
@@ -120,12 +120,14 @@ label("Tape", "VCR TAPE", Vector2.new(1, 1), UDim2.fromScale(1, 1))
 
 gui.Parent = Players.LocalPlayer:WaitForChild("PlayerGui")
 
+local blinkEnabled = true
+
 task.spawn(function()
 	local startedAt = os.clock()
 	local on = true
 	while true do
 		task.wait(BLINK_HALF_PERIOD)
-		on = not on
+		on = if blinkEnabled then not on else true
 		recDot.BackgroundTransparency = if on then 0 else 1
 		local elapsed = math.floor(os.clock() - startedAt)
 		timecode.Text =
@@ -133,7 +135,25 @@ task.spawn(function()
 	end
 end)
 
+local layers: { [string]: GuiObject } =
+	{ frame = frame, scanlines = scanlines, vignette = vignette }
+
 local VhsOverlay = {}
+
+function VhsOverlay.setLayerVisible(name: string, visible: boolean)
+	layers[name].Visible = visible
+end
+
+function VhsOverlay.setScanlineCount(count: number)
+	if count ~= scanlineCount then
+		scanlineCount = count
+		buildScanlines(count)
+	end
+end
+
+function VhsOverlay.setBlink(enabled: boolean)
+	blinkEnabled = enabled
+end
 
 function VhsOverlay.setFear(sample: VisualConfig.FearSample)
 	scanlines.GroupTransparency = 1 - sample.scanlines

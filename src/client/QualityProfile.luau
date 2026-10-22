@@ -3,74 +3,68 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 
-local Settings = require(ReplicatedStorage.Shared.Settings)
 local VisualConfig = require(ReplicatedStorage.Shared.VisualConfig)
 
-local AUTO = VisualConfig.AutoQuality
-local ORDER: { VisualConfig.QualityName } = { "High", "Medium", "Low" }
+local ORDER: { VisualConfig.QualityName } = { "high", "medium", "low" }
+local WINDOW = 4 -- seconds per FPS measurement
+local MIN_FPS = 28
 
-local preference: Settings.Quality = "Auto"
+local mode: VisualConfig.QualityMode = "auto"
 local autoIndex = if UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled
 	then 2
 	else 1
-local listeners: { (VisualConfig.QualityName) -> () } = {}
-local warmup = 0
-local frames = 0
-local seconds = 0
+local listeners: { () -> () } = {}
+
+local function currentName(): VisualConfig.QualityName
+	return if mode == "auto" then ORDER[autoIndex] else mode
+end
+
+local shown = currentName()
+
+local function refresh()
+	local name = currentName()
+	if name ~= shown then
+		shown = name
+		for _, listener in listeners do
+			listener()
+		end
+	end
+end
 
 local QualityProfile = {}
 
-function QualityProfile.getName(): VisualConfig.QualityName
-	if preference ~= "Auto" then
-		return preference
-	end
-	return ORDER[autoIndex]
+function QualityProfile.get(): VisualConfig.QualityProfile
+	return VisualConfig.QUALITY[shown]
 end
 
-function QualityProfile.get(): VisualConfig.Profile
-	return VisualConfig.Profiles[QualityProfile.getName()]
-end
-
-function QualityProfile.onChanged(listener: (VisualConfig.QualityName) -> ())
+function QualityProfile.onChanged(listener: () -> ())
 	table.insert(listeners, listener)
 end
 
-local function notify()
-	local name = QualityProfile.getName()
-	for _, listener in listeners do
-		listener(name)
-	end
+function QualityProfile.setMode(value: VisualConfig.QualityMode)
+	mode = value
+	refresh()
 end
 
-function QualityProfile.setPreference(value: Settings.Quality)
-	if value == preference then
-		return
-	end
-	preference = value
-	warmup, frames, seconds = 0, 0, 0
-	notify()
-end
-
--- only steps down: stepping back up would make the profile oscillate
+-- Automatic mode only steps down, so a slow moment never makes the profile flap back and forth.
 function QualityProfile.start()
-	RunService.Heartbeat:Connect(function(dt)
-		if preference ~= "Auto" or autoIndex >= #ORDER then
-			return
-		end
-		warmup += dt
-		if warmup < AUTO.warmupSeconds then
-			return
-		end
+	local frames = 0
+	local elapsed = 0
+	local warmingUp = true
+	RunService.RenderStepped:Connect(function(dt)
 		frames += 1
-		seconds += dt
-		if seconds < AUTO.windowSeconds then
+		elapsed += dt
+		if elapsed < WINDOW then
 			return
 		end
-		local fps = frames / seconds
-		frames, seconds = 0, 0
-		if fps < AUTO.downgradeBelowFps then
+		local fps = frames / elapsed
+		frames = 0
+		elapsed = 0
+		if warmingUp then
+			warmingUp = false
+		elseif mode == "auto" and fps < MIN_FPS and autoIndex < #ORDER then
 			autoIndex += 1
-			notify()
+			refresh()
 		end
 	end)
 end
