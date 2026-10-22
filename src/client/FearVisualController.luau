@@ -1,4 +1,5 @@
 --!strict
+local Lighting = game:GetService("Lighting")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 
@@ -6,33 +7,38 @@ local Remotes = require(ReplicatedStorage.Shared.Remotes)
 local VisualConfig = require(ReplicatedStorage.Shared.VisualConfig)
 local VhsOverlay = require(script.Parent.VhsOverlay)
 
+local SETTLE_TIME = 0.13 -- time constant: about 95% of a change is shown within 0.4 s
+
 local FearVisualController = {}
 
 function FearVisualController.start()
-	local current = 0
-	local from = 0
+	local color = Instance.new("ColorCorrectionEffect")
+	color.Name = "FearColor"
+	color.Parent = Lighting
+
 	local target = 0
-	local elapsed = VisualConfig.FEAR_SMOOTH_SECONDS
+	local shown = 0
 
-	VhsOverlay.setBand(VisualConfig.sampleBand(current))
+	local function apply()
+		local sample = VisualConfig.sampleFear(shown)
+		color.Saturation = sample.saturation
+		VhsOverlay.setFear(sample)
+	end
+	apply()
 
-	Remotes.FearChanged.OnClientEvent:Connect(function(value: unknown)
-		if typeof(value) ~= "number" or value ~= value then
-			return
-		end
-		from = current
-		target = math.clamp(value, 0, VisualConfig.FEAR_MAX)
-		elapsed = 0
+	Remotes.FearChanged.OnClientEvent:Connect(function(level: number)
+		target = level
 	end)
 
-	RunService.Heartbeat:Connect(function(dt)
-		if current == target then
+	RunService.RenderStepped:Connect(function(dt)
+		if shown == target then
 			return
 		end
-		elapsed += dt
-		local t = elapsed / VisualConfig.FEAR_SMOOTH_SECONDS
-		current = if t >= 1 then target else from + (target - from) * t
-		VhsOverlay.setBand(VisualConfig.sampleBand(current))
+		shown += (target - shown) * (1 - math.exp(-dt / SETTLE_TIME))
+		if math.abs(target - shown) < 0.05 then
+			shown = target
+		end
+		apply()
 	end)
 end
 

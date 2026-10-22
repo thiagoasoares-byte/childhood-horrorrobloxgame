@@ -1,307 +1,145 @@
 --!strict
-local Lighting = game:GetService("Lighting")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local RunService = game:GetService("RunService")
 
 local VisualConfig = require(ReplicatedStorage.Shared.VisualConfig)
-local Ui = require(script.Parent.Ui)
 
-local make = Ui.make
+local SCANLINE_COUNT = 120
+local VIGNETTE_DEPTH = 0.35 -- fraction of the screen each edge gradient covers
+local BLINK_HALF_PERIOD = 0.5 -- one full on/off cycle per second, below the 3 flashes per second limit
+local MARGIN = 28
 
-export type Options = {
-	frame: boolean,
-	frameAnimated: boolean,
-	scanlines: boolean,
-	scanlineSpacing: number,
-	vignette: number,
-	colorGrade: boolean,
-	brightness: number,
-}
+local gui = Instance.new("ScreenGui")
+gui.Name = "VhsOverlay"
+gui.ResetOnSpawn = false
+gui.IgnoreGuiInset = true
+gui.ScreenInsets = Enum.ScreenInsets.None
+gui.DisplayOrder = 100
+gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
-type Ui = {
-	vignette: { UIGradient },
-	scanlines: Frame,
-	lines: { Frame },
-	frame: Frame,
-	recDot: Frame,
-	timecode: TextLabel,
-	labels: { TextLabel },
-	colorCorrection: ColorCorrectionEffect,
-}
-
-type Edge = { size: UDim2, anchor: Vector2, rotation: number }
-
-local BLINK_SECONDS = 1
-local TEXT_COLOR = Color3.fromRGB(235, 235, 235)
-local REC_COLOR = Color3.fromRGB(220, 40, 40)
-
-local band = VisualConfig.sampleBand(0)
-local options: Options = {
-	frame = true,
-	frameAnimated = true,
-	scanlines = true,
-	scanlineSpacing = VisualConfig.Profiles.High.scanlineSpacing,
-	vignette = 1,
-	colorGrade = true,
-	brightness = 0,
-}
-local ui: Ui? = nil
-local lastScanlineOpacity = -1
-local lastVignetteOpacity = -1
-
-local function fullScreen(name: string, zIndex: number, parent: Instance): Frame
-	return make("Frame", {
-		Name = name,
-		Size = UDim2.fromScale(1, 1),
-		BackgroundTransparency = 1,
-		ZIndex = zIndex,
-	}, parent)
+local function layer(name: string, zIndex: number, class: string): GuiObject
+	local object = Instance.new(class) :: GuiObject
+	object.Name = name
+	object.ZIndex = zIndex
+	object.Size = UDim2.fromScale(1, 1)
+	object.BackgroundTransparency = 1
+	object.BorderSizePixel = 0
+	object.Parent = gui
+	return object
 end
 
-local function edgeSequence(opacity: number): NumberSequence
-	return NumberSequence.new({
-		NumberSequenceKeypoint.new(0, 1 - opacity),
-		NumberSequenceKeypoint.new(1, 1),
-	})
+local vignette = layer("Vignette", 1, "Frame")
+local scanlines = layer("Scanlines", 2, "CanvasGroup") :: CanvasGroup
+local frame = layer("Frame", 3, "Frame")
+
+local edges: { Frame } = {}
+
+local function addEdge(
+	name: string,
+	size: UDim2,
+	position: UDim2,
+	anchor: Vector2,
+	rotation: number
+)
+	local edge = Instance.new("Frame")
+	edge.Name = name
+	edge.Size = size
+	edge.Position = position
+	edge.AnchorPoint = anchor
+	edge.BackgroundColor3 = Color3.new(0, 0, 0)
+	edge.BorderSizePixel = 0
+	local gradient = Instance.new("UIGradient")
+	gradient.Transparency = NumberSequence.new(0, 1)
+	gradient.Rotation = rotation
+	gradient.Parent = edge
+	edge.Parent = vignette
+	table.insert(edges, edge)
 end
 
-local function refresh()
-	local u = ui
-	if not u then
-		return
-	end
+local horizontal = UDim2.fromScale(1, VIGNETTE_DEPTH)
+local vertical = UDim2.fromScale(VIGNETTE_DEPTH, 1)
+addEdge("Top", horizontal, UDim2.fromScale(0, 0), Vector2.new(0, 0), 90)
+addEdge("Bottom", horizontal, UDim2.fromScale(0, 1), Vector2.new(0, 1), -90)
+addEdge("Left", vertical, UDim2.fromScale(0, 0), Vector2.new(0, 0), 0)
+addEdge("Right", vertical, UDim2.fromScale(1, 0), Vector2.new(1, 0), 180)
 
-	local vignetteOpacity = band.vignette * options.vignette
-	if math.abs(vignetteOpacity - lastVignetteOpacity) > 0.001 then
-		lastVignetteOpacity = vignetteOpacity
-		local sequence = edgeSequence(vignetteOpacity)
-		for _, gradient in u.vignette do
-			gradient.Transparency = sequence
-		end
+local function buildScanlines(count: number)
+	scanlines:ClearAllChildren()
+	for i = 0, count - 1 do
+		local line = Instance.new("Frame")
+		line.Size = UDim2.new(1, 0, 0, 2)
+		line.Position = UDim2.fromScale(0, i / count)
+		line.BackgroundColor3 = Color3.new(0, 0, 0)
+		line.BorderSizePixel = 0
+		line.Parent = scanlines
 	end
-
-	local scanlineOpacity = if options.scanlines then band.scanlines else 0
-	local quantized = math.floor(scanlineOpacity * 100 + 0.5) / 100
-	u.scanlines.Visible = quantized > 0
-	if quantized ~= lastScanlineOpacity then
-		lastScanlineOpacity = quantized
-		for _, line in u.lines do
-			line.BackgroundTransparency = 1 - quantized
-		end
-	end
-
-	u.colorCorrection.Saturation = if options.colorGrade then band.saturation else 0
-	u.colorCorrection.Brightness = options.brightness * VisualConfig.Brightness.maxLift
-	u.frame.Visible = options.frame
 end
 
-local function rebuildScanlines(u: Ui)
-	for _, line in u.lines do
-		line:Destroy()
-	end
-	table.clear(u.lines)
-	lastScanlineOpacity = -1
+buildScanlines(SCANLINE_COUNT)
 
-	local y = 0
-	local height = u.scanlines.AbsoluteSize.Y
-	while y < height do
-		table.insert(
-			u.lines,
-			make("Frame", {
-				Size = UDim2.new(1, 0, 0, 1),
-				Position = UDim2.fromOffset(0, y),
-				BackgroundColor3 = Color3.new(0, 0, 0),
-				BorderSizePixel = 0,
-				BackgroundTransparency = 1,
-			}, u.scanlines)
-		)
-		y += options.scanlineSpacing
-	end
-	refresh()
+local padding = Instance.new("UIPadding")
+padding.PaddingTop = UDim.new(0, MARGIN)
+padding.PaddingBottom = UDim.new(0, MARGIN)
+padding.PaddingLeft = UDim.new(0, MARGIN)
+padding.PaddingRight = UDim.new(0, MARGIN)
+padding.Parent = frame
+
+local function label(name: string, text: string, anchor: Vector2, position: UDim2): TextLabel
+	local textLabel = Instance.new("TextLabel")
+	textLabel.Name = name
+	textLabel.Text = text
+	textLabel.Size = UDim2.new()
+	textLabel.AutomaticSize = Enum.AutomaticSize.XY
+	textLabel.AnchorPoint = anchor
+	textLabel.Position = position
+	textLabel.BackgroundTransparency = 1
+	textLabel.Font = Enum.Font.RobotoMono
+	textLabel.TextSize = 24
+	textLabel.TextColor3 = Color3.new(1, 1, 1)
+	textLabel.TextStrokeTransparency = 0.6
+	textLabel.Parent = frame
+	return textLabel
 end
 
-local function applyTextSize(u: Ui)
-	local size = math.clamp(math.floor(u.frame.AbsoluteSize.Y * 0.03), 14, 28)
-	for _, label in u.labels do
-		label.TextSize = size
+local recDot = Instance.new("Frame")
+recDot.Name = "RecDot"
+recDot.Size = UDim2.fromOffset(14, 14)
+recDot.Position = UDim2.fromOffset(0, 6)
+recDot.BackgroundColor3 = Color3.fromRGB(230, 40, 40)
+recDot.BorderSizePixel = 0
+recDot.Parent = frame
+local recCorner = Instance.new("UICorner")
+recCorner.CornerRadius = UDim.new(1, 0)
+recCorner.Parent = recDot
+
+label("Rec", "REC", Vector2.new(0, 0), UDim2.fromOffset(22, 0))
+label("Play", "PLAY > SP", Vector2.new(1, 0), UDim2.fromScale(1, 0))
+local timecode = label("Timecode", "00:00:00", Vector2.new(0, 1), UDim2.fromScale(0, 1))
+label("Volume", "VOL [#####--]", Vector2.new(1, 1), UDim2.new(1, 0, 1, -30))
+label("Tape", "VCR TAPE", Vector2.new(1, 1), UDim2.fromScale(1, 1))
+
+gui.Parent = Players.LocalPlayer:WaitForChild("PlayerGui")
+
+task.spawn(function()
+	local startedAt = os.clock()
+	local on = true
+	while true do
+		task.wait(BLINK_HALF_PERIOD)
+		on = not on
+		recDot.BackgroundTransparency = if on then 0 else 1
+		local elapsed = math.floor(os.clock() - startedAt)
+		timecode.Text =
+			string.format("%02d:%02d:%02d", elapsed // 3600, elapsed // 60 % 60, elapsed % 60)
 	end
-	u.recDot.Size = UDim2.fromOffset(size * 0.6, size * 0.6)
-end
-
-local function column(name: string, anchor: Vector2, parent: Instance): Frame
-	local container = make("Frame", {
-		Name = name,
-		AnchorPoint = anchor,
-		Position = UDim2.fromScale(anchor.X, anchor.Y),
-		Size = UDim2.new(),
-		AutomaticSize = Enum.AutomaticSize.XY,
-		BackgroundTransparency = 1,
-	}, parent)
-	make("UIListLayout", {
-		SortOrder = Enum.SortOrder.LayoutOrder,
-		HorizontalAlignment = if anchor.X == 1
-			then Enum.HorizontalAlignment.Right
-			else Enum.HorizontalAlignment.Left,
-		Padding = UDim.new(0, 2),
-	}, container)
-	return container
-end
-
-local function build(): Ui
-	local gui = make("ScreenGui", {
-		Name = "VhsOverlay",
-		ResetOnSpawn = false,
-		DisplayOrder = 100,
-		ScreenInsets = Enum.ScreenInsets.None,
-		ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
-	}, nil)
-
-	local vignetteRoot = fullScreen("Vignette", 1, gui)
-	local gradients: { UIGradient } = {}
-	local edges: { Edge } = {
-		{ size = UDim2.fromScale(1, 0.3), anchor = Vector2.new(0, 0), rotation = 90 },
-		{ size = UDim2.fromScale(1, 0.3), anchor = Vector2.new(0, 1), rotation = 270 },
-		{ size = UDim2.fromScale(0.25, 1), anchor = Vector2.new(0, 0), rotation = 0 },
-		{ size = UDim2.fromScale(0.25, 1), anchor = Vector2.new(1, 0), rotation = 180 },
-	}
-	for _, edge in edges do
-		local piece = make("Frame", {
-			Size = edge.size,
-			AnchorPoint = edge.anchor,
-			Position = UDim2.fromScale(edge.anchor.X, edge.anchor.Y),
-			BackgroundColor3 = Color3.new(0, 0, 0),
-			BorderSizePixel = 0,
-		}, vignetteRoot)
-		table.insert(gradients, make("UIGradient", { Rotation = edge.rotation }, piece))
-	end
-
-	local scanlines = fullScreen("Scanlines", 2, gui)
-	scanlines.ClipsDescendants = true
-
-	local frame = fullScreen("Frame", 3, gui)
-	make("UIPadding", {
-		PaddingLeft = UDim.new(0.03, 0),
-		PaddingRight = UDim.new(0.03, 0),
-		PaddingTop = UDim.new(0.04, 0),
-		PaddingBottom = UDim.new(0.04, 0),
-	}, frame)
-
-	local labels: { TextLabel } = {}
-	local function label(text: string, parent: Instance, order: number): TextLabel
-		local created = make("TextLabel", {
-			Text = text,
-			LayoutOrder = order,
-			Size = UDim2.new(),
-			AutomaticSize = Enum.AutomaticSize.XY,
-			BackgroundTransparency = 1,
-			Font = Enum.Font.RobotoMono,
-			TextColor3 = TEXT_COLOR,
-			TextTransparency = 0.15,
-			TextStrokeTransparency = 0.6,
-		}, parent)
-		table.insert(labels, created)
-		return created
-	end
-
-	local topLeft = column("TopLeft", Vector2.new(0, 0), frame)
-	local recRow = make("Frame", {
-		Size = UDim2.new(),
-		AutomaticSize = Enum.AutomaticSize.XY,
-		BackgroundTransparency = 1,
-	}, topLeft)
-	make("UIListLayout", {
-		FillDirection = Enum.FillDirection.Horizontal,
-		VerticalAlignment = Enum.VerticalAlignment.Center,
-		Padding = UDim.new(0, 6),
-	}, recRow)
-	local recDot = make("Frame", { BackgroundColor3 = REC_COLOR, BorderSizePixel = 0 }, recRow)
-	make("UICorner", { CornerRadius = UDim.new(1, 0) }, recDot)
-	label("REC", recRow, 2)
-	label("SP", topLeft, 2)
-
-	local topRight = column("TopRight", Vector2.new(1, 0), frame)
-	label("PLAY >", topRight, 1)
-
-	local bottomLeft = column("BottomLeft", Vector2.new(0, 1), frame)
-	local timecode = label("00:00:00", bottomLeft, 1)
-
-	local bottomCenter = column("BottomCenter", Vector2.new(0.5, 1), frame)
-	label("VCR TAPE", bottomCenter, 1)
-
-	local bottomRight = column("BottomRight", Vector2.new(1, 1), frame)
-	label("VOL ||||.", bottomRight, 1)
-
-	gui.Parent = Players.LocalPlayer:WaitForChild("PlayerGui")
-
-	local colorCorrection = make("ColorCorrectionEffect", { Name = "VhsColor" }, Lighting)
-
-	return {
-		vignette = gradients,
-		scanlines = scanlines,
-		lines = {},
-		frame = frame,
-		recDot = recDot,
-		timecode = timecode,
-		labels = labels,
-		colorCorrection = colorCorrection,
-	}
-end
+end)
 
 local VhsOverlay = {}
 
-function VhsOverlay.setBand(value: VisualConfig.Band)
-	band = value
-	refresh()
-end
-
-function VhsOverlay.setOptions(value: Options)
-	local spacingChanged = value.scanlineSpacing ~= options.scanlineSpacing
-	options = value
-	local u = ui
-	if u and spacingChanged then
-		rebuildScanlines(u)
-	else
-		refresh()
+function VhsOverlay.setFear(sample: VisualConfig.FearSample)
+	scanlines.GroupTransparency = 1 - sample.scanlines
+	for _, edge in edges do
+		edge.BackgroundTransparency = 1 - sample.vignette
 	end
-end
-
-function VhsOverlay.start()
-	local u = build()
-	ui = u
-
-	local resizePending = false
-	local function onResize()
-		resizePending = false
-		rebuildScanlines(u)
-		applyTextSize(u)
-	end
-	u.scanlines:GetPropertyChangedSignal("AbsoluteSize"):Connect(function()
-		if not resizePending then
-			resizePending = true
-			task.delay(0.25, onResize)
-		end
-	end)
-	onResize()
-
-	local startClock = os.clock()
-	local shownSeconds = -1
-	local dotOn = true
-	local elapsed = 0
-	RunService.Heartbeat:Connect(function(dt)
-		elapsed += dt
-		local seconds = math.floor(os.clock() - startClock)
-		if seconds ~= shownSeconds then
-			shownSeconds = seconds
-			u.timecode.Text =
-				string.format("%02d:%02d:%02d", seconds // 3600, seconds // 60 % 60, seconds % 60)
-		end
-		local on = not options.frameAnimated or elapsed % BLINK_SECONDS < BLINK_SECONDS / 2
-		if on ~= dotOn then
-			dotOn = on
-			u.recDot.BackgroundTransparency = if on then 0 else 1
-		end
-	end)
 end
 
 return VhsOverlay
