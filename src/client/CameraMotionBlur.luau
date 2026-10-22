@@ -2,63 +2,53 @@
 local Lighting = game:GetService("Lighting")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
+local Workspace = game:GetService("Workspace")
 
 local VisualConfig = require(ReplicatedStorage.Shared.VisualConfig)
 
-local BLUR = VisualConfig.Blur
-local MAX_FRAME_SECONDS = 0.1
-local SNAP_BELOW = 0.05
+-- Provisional tuning, to be adjusted on the P5 reference phone.
+local DEADZONE = 1.5 -- rad/s of camera turn that produces no blur
+local GAIN = 2 -- blur size per rad/s above the dead zone
+local SMOOTHING = 12 -- per second
 
-local ceiling = VisualConfig.Profiles.High.blurMax
-local size = 0
-local previousLook: Vector3? = nil
+local cap = VisualConfig.QUALITY.high.blurMax
 
 local CameraMotionBlur = {}
 
-function CameraMotionBlur.setCeiling(value: number)
-	ceiling = math.max(value, 0)
+function CameraMotionBlur.setCap(value: number)
+	cap = math.max(0, value)
 end
 
 function CameraMotionBlur.start()
 	local blur = Instance.new("BlurEffect")
-	blur.Name = "MotionBlur"
+	blur.Name = "CameraMotionBlur"
 	blur.Size = 0
 	blur.Enabled = false
 	blur.Parent = Lighting
 
-	RunService:BindToRenderStep(
-		"ChildhoodMotionBlur",
-		Enum.RenderPriority.Camera.Value + 1,
-		function(dt: number)
-			local camera = workspace.CurrentCamera
-			if not camera then
-				return
-			end
-			local look = camera.CFrame.LookVector
-			local last = previousLook
-			previousLook = look
-			if last == nil or dt <= 0 or dt > MAX_FRAME_SECONDS then
-				return
-			end
+	local lastLook: Vector3? = nil
+	local size = 0
 
-			local speed = last:Angle(look) / dt
-			if speed > BLUR.cutSpeed then
-				return
-			end
-
-			local intensity =
-				math.clamp((speed - BLUR.deadzone) / (BLUR.fullAt - BLUR.deadzone), 0, 1)
-			local target = ceiling * intensity
-			local seconds = if target > size then BLUR.riseSeconds else BLUR.fallSeconds
-			size += (target - size) * (1 - math.exp(-dt / seconds))
-			if target < SNAP_BELOW and size < SNAP_BELOW then
-				size = 0
-			end
-
-			blur.Size = size
-			blur.Enabled = size > 0
+	RunService.RenderStepped:Connect(function(dt)
+		local camera = Workspace.CurrentCamera
+		if not camera or dt <= 0 then
+			return
 		end
-	)
+		local look = camera.CFrame.LookVector
+		local speed = 0
+		if lastLook then
+			speed = math.acos(math.clamp(look:Dot(lastLook), -1, 1)) / dt
+		end
+		lastLook = look
+
+		local target = math.min(cap, math.max(0, speed - DEADZONE) * GAIN)
+		size += (target - size) * (1 - math.exp(-SMOOTHING * dt))
+		if size < 0.05 then
+			size = 0
+		end
+		blur.Size = size
+		blur.Enabled = size > 0
+	end)
 end
 
 return CameraMotionBlur

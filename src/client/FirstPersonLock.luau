@@ -1,50 +1,40 @@
 --!strict
 local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
 
 local player = Players.LocalPlayer
 
-local parts: { [BasePart]: true } = {}
+local FirstPersonLock = {}
 
-local function track(character: Model)
-	table.clear(parts)
+-- The default camera script resets this every frame, so the hide is re-applied on change.
+local function hide(part: BasePart)
+	local function apply()
+		if part.LocalTransparencyModifier ~= 1 then
+			part.LocalTransparencyModifier = 1
+		end
+	end
+	apply()
+	part:GetPropertyChangedSignal("LocalTransparencyModifier"):Connect(apply)
+end
+
+local function hideBody(character: Model)
 	for _, descendant in character:GetDescendants() do
 		if descendant:IsA("BasePart") then
-			parts[descendant] = true
+			hide(descendant)
 		end
 	end
 	character.DescendantAdded:Connect(function(descendant)
 		if descendant:IsA("BasePart") then
-			parts[descendant] = true
-		end
-	end)
-	character.DescendantRemoving:Connect(function(descendant)
-		if descendant:IsA("BasePart") then
-			parts[descendant] = nil
+			hide(descendant)
 		end
 	end)
 end
 
-local FirstPersonLock = {}
-
 function FirstPersonLock.start()
 	player.CameraMode = Enum.CameraMode.LockFirstPerson
-
-	-- runs after the default camera, which resets this property every frame
-	RunService:BindToRenderStep(
-		"ChildhoodHideBody",
-		Enum.RenderPriority.Camera.Value + 1,
-		function()
-			for part in parts do
-				part.LocalTransparencyModifier = 1
-			end
-		end
-	)
-
 	if player.Character then
-		track(player.Character)
+		hideBody(player.Character)
 	end
-	player.CharacterAdded:Connect(track)
+	player.CharacterAdded:Connect(hideBody)
 end
 
 return FirstPersonLock
