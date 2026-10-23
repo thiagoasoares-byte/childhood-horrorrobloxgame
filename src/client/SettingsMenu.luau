@@ -3,6 +3,7 @@ local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 
 local AccessibilitySettings = require(script.Parent.AccessibilitySettings)
+local FirstPersonCamera = require(script.Parent.FirstPersonCamera)
 
 type Option = { value: any, text: string }
 type Row = { key: string, title: string, options: { Option } }
@@ -58,7 +59,7 @@ local ROWS: { Row } = {
 local gui = Instance.new("ScreenGui")
 gui.Name = "SettingsMenu"
 gui.ResetOnSpawn = false
-gui.DisplayOrder = 250
+gui.DisplayOrder = 350 -- above the content notice, so the menu can be opened from it
 gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
 local function styleButton(button: TextButton, text: string)
@@ -71,19 +72,22 @@ local function styleButton(button: TextButton, text: string)
 	button.TextColor3 = Color3.new(1, 1, 1)
 end
 
-local openButton = Instance.new("TextButton")
-openButton.Name = "Open"
-openButton.AnchorPoint = Vector2.new(0.5, 1)
-openButton.Position = UDim2.new(0.5, 0, 1, -28)
-openButton.Size = UDim2.fromOffset(160, 44)
-styleButton(openButton, if UserInputService.KeyboardEnabled then "OPÇÕES (O)" else "OPÇÕES")
-openButton.BackgroundTransparency = 0.4
-openButton.Parent = gui
+-- With a keyboard the menu opens only by shortcut; touch devices have no key, so they get a button.
+local openButton: TextButton? = nil
+if not UserInputService.KeyboardEnabled then
+	local button = Instance.new("TextButton")
+	button.Name = "Open"
+	button.AnchorPoint = Vector2.new(0.5, 1)
+	button.Position = UDim2.new(0.5, 0, 1, -28)
+	button.Size = UDim2.fromOffset(160, 44)
+	styleButton(button, "OPÇÕES")
+	button.BackgroundTransparency = 0.4
+	button.Parent = gui
+	openButton = button
+end
 
--- A visible Modal button frees the mouse, which first person lock would otherwise keep centred.
 local panel = Instance.new("TextButton")
 panel.Name = "Panel"
-panel.Modal = true
 panel.Visible = false
 panel.Text = ""
 panel.AutoButtonColor = false
@@ -129,6 +133,7 @@ list.Parent = panel
 
 local layout = Instance.new("UIListLayout")
 layout.Padding = UDim.new(0, 6)
+layout.SortOrder = Enum.SortOrder.LayoutOrder
 layout.Parent = list
 
 local closeButton = Instance.new("TextButton")
@@ -182,16 +187,20 @@ function SettingsMenu.open()
 		refresh(ROWS[i], button)
 	end
 	panel.Visible = true
+	FirstPersonCamera.setCursorFree("settings", true)
 end
 
 function SettingsMenu.close()
 	panel.Visible = false
+	FirstPersonCamera.setCursorFree("settings", false)
 end
 
 function SettingsMenu.start()
 	gui.Parent = Players.LocalPlayer:WaitForChild("PlayerGui")
 
-	openButton.Activated:Connect(SettingsMenu.open)
+	if openButton then
+		openButton.Activated:Connect(SettingsMenu.open)
+	end
 	closeButton.Activated:Connect(SettingsMenu.close)
 	UserInputService.InputBegan:Connect(function(input, processed)
 		if processed or input.KeyCode ~= TOGGLE_KEY then

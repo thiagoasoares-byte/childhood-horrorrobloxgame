@@ -1,4 +1,5 @@
 --!strict
+local GuiService = game:GetService("GuiService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
@@ -83,6 +84,13 @@ padding.PaddingBottom = UDim.new(0, MARGIN)
 padding.PaddingLeft = UDim.new(0, MARGIN)
 padding.PaddingRight = UDim.new(0, MARGIN)
 padding.Parent = frame
+
+-- The top labels sit below the Roblox topbar, which would otherwise cover the one at the left.
+local function updateTopMargin()
+	padding.PaddingTop = UDim.new(0, math.max(MARGIN, GuiService.TopbarInset.Max.Y + 8))
+end
+updateTopMargin()
+GuiService:GetPropertyChangedSignal("TopbarInset"):Connect(updateTopMargin)
 
 local function label(name: string, text: string, anchor: Vector2, position: UDim2): TextLabel
 	local textLabel = Instance.new("TextLabel")

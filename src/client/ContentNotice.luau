@@ -1,13 +1,18 @@
 --!strict
 local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
 
+local FirstPersonCamera = require(script.Parent.FirstPersonCamera)
 local SettingsMenu = require(script.Parent.SettingsMenu)
 
 local TARGET = 48 -- px, above the 44 px minimum touch target
 
-local MESSAGE = "Childhood é um jogo de terror. Ele usa escuridão, ruído de vídeo, desfoque e "
-	.. "variações de brilho que podem incomodar pessoas sensíveis à luz. Você pode reduzir ou "
-	.. "desligar cada efeito em Opções, a qualquer momento (tecla O ou botão na tela)."
+local function message(): string
+	local where = if UserInputService.KeyboardEnabled then "tecla O" else "botão Opções na tela"
+	return "Childhood é um jogo de terror. Ele usa escuridão, ruído de vídeo, desfoque e "
+		.. "variações de brilho que podem incomodar pessoas sensíveis à luz. Você pode reduzir ou "
+		.. `desligar cada efeito em Opções, a qualquer momento ({where}).`
+end
 
 local ContentNotice = {}
 
@@ -46,9 +51,7 @@ function ContentNotice.show()
 	gui.IgnoreGuiInset = true
 	gui.DisplayOrder = 300
 
-	-- Modal so the mouse is free to press the buttons even under first person lock.
 	local backdrop = Instance.new("TextButton")
-	backdrop.Modal = true
 	backdrop.Text = ""
 	backdrop.AutoButtonColor = false
 	backdrop.Size = UDim2.fromScale(1, 1)
@@ -74,7 +77,7 @@ function ContentNotice.show()
 	layout.Parent = content
 
 	text(content, "Aviso de conteúdo", 26, 1)
-	text(content, MESSAGE, 20, 2)
+	text(content, message(), 20, 2)
 
 	local buttons = Instance.new("Frame")
 	buttons.LayoutOrder = 3
@@ -92,12 +95,15 @@ function ContentNotice.show()
 
 	proceed.Activated:Connect(function()
 		gui:Destroy()
+		FirstPersonCamera.setCursorFree("notice", false)
 	end)
 	settings.Activated:Connect(function()
 		gui:Destroy()
+		FirstPersonCamera.setCursorFree("notice", false)
 		SettingsMenu.open()
 	end)
 
+	FirstPersonCamera.setCursorFree("notice", true)
 	gui.Parent = Players.LocalPlayer:WaitForChild("PlayerGui")
 end
 
