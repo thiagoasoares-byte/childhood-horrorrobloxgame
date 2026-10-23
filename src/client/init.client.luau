@@ -1,0 +1,16 @@
+--!strict
+local AccessibilitySettings = require(script.AccessibilitySettings)
+local CameraMotionBlur = require(script.CameraMotionBlur)
+local ContentNotice = require(script.ContentNotice)
+local FearVisualController = require(script.FearVisualController)
+local FirstPersonCamera = require(script.FirstPersonCamera)
+local QualityProfile = require(script.QualityProfile)
+local SettingsMenu = require(script.SettingsMenu)
+
+FirstPersonCamera.start()
+CameraMotionBlur.start()
+FearVisualController.start()
+QualityProfile.start()
+AccessibilitySettings.start()
+SettingsMenu.start()
+ContentNotice.show()

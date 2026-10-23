@@ -21,9 +21,9 @@ Ordem fixa: M1, M2, M3, M4, M5, M6. Os milestones M5 e M6 só começam depois do
 
 ### M1: Fundação visual e de conforto
 
-- **Objetivo:** primeira pessoa travada, pilha VHS P0, blur de câmera, Medo no servidor e interpolado no cliente, aviso de fotossensibilidade e configurações de acessibilidade.
+- **Objetivo:** primeira pessoa com câmera própria (bob, inclinação ao girar, variação de FOV, corpo visível sem a cabeça), pilha VHS P0, blur de câmera, Medo no servidor e interpolado no cliente, aviso de fotossensibilidade e configurações de acessibilidade.
 - **Sistemas:** câmera, VHS, Medo, acessibilidade, perfis de qualidade.
-- **Módulos que mudam:** `shared/VisualConfig` (constantes por faixa de Medo e por perfil), `shared/Remotes` (`FearChanged`, `SettingsChanged`), `server/FearService` (por jogador, clamp, replicação), `server/init.server`. Novos: `client/FirstPersonLock`, `client/CameraMotionBlur`, `client/VhsOverlay`, `client/FearVisualController`, `client/AccessibilitySettings`, `client/QualityProfile`, `client/ContentNotice`.
+- **Módulos que mudam:** `shared/VisualConfig` (constantes por faixa de Medo e por perfil), `shared/Remotes` (`FearChanged`, `SettingsChanged`), `server/FearService` (por jogador, clamp, replicação), `server/init.server`. Novos: `client/FirstPersonCamera`, `client/CameraMotionBlur`, `client/VhsOverlay`, `client/FearVisualController`, `client/AccessibilitySettings`, `client/QualityProfile`, `client/ContentNotice`.
 - **Dependências:** P5 (celular de referência). Sem persistência no M1 (D20). Renomear o projeto Rojo.
 - **Critérios de conclusão:**
   1. Pilha P0 funciona nos três perfis de qualidade (GDD 9.1, 9.4).
@@ -129,7 +129,7 @@ Ordem fixa: M1, M2, M3, M4, M5, M6. Os milestones M5 e M6 só começam depois do
 
 | Módulo | Lado | Função | Milestone |
 |---|---|---|---|
-| `client/FirstPersonLock` | Client | Primeira pessoa travada, corpo local oculto | M1 |
+| `client/FirstPersonCamera` | Client | Câmera scriptable em primeira pessoa: bob, inclinação, FOV, corpo visível sem a cabeça | M1 |
 | `client/CameraMotionBlur` | Client | `BlurEffect` ∝ velocidade angular, com teto | M1 |
 | `client/VhsOverlay` | Client | Pilha VHS em camadas | M1, M6 |
 | `client/FearVisualController` | Client | Interpola o Medo e ajusta o VHS | M1 |
