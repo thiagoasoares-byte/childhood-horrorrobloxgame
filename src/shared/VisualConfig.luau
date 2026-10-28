@@ -35,6 +35,7 @@ local VisualConfig = {}
 
 VisualConfig.FEAR_MIN = 0
 VisualConfig.FEAR_MAX = 100
+VisualConfig.LETTERBOX_HEIGHT = 0.14 -- screen fraction of each black bar, shared by the camera and the REC label
 
 -- Anchors sit at the middle of each GDD 9.5 band, so the value is exact at the centre and blends toward the neighbour.
 local ANCHORS: { { at: number, sample: FearSample } } = {
@@ -88,14 +89,14 @@ local ANCHORS: { { at: number, sample: FearSample } } = {
 local QUALITY: { [QualityName]: QualityProfile } = {
 	high = {
 		blurMax = 24,
-		scanlineCount = 120,
+		scanlineCount = 200,
 		noiseFps = 12,
 		aberration = "animated",
 		posterize = true,
 	},
 	medium = {
 		blurMax = 14,
-		scanlineCount = 90,
+		scanlineCount = 120,
 		noiseFps = 6,
 		aberration = "static",
 		posterize = true,

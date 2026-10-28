@@ -3,7 +3,7 @@ local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 
 local AccessibilitySettings = require(script.Parent.AccessibilitySettings)
-local FirstPersonCamera = require(script.Parent.FirstPersonCamera)
+local HorrorCamera = require(script.Parent.HorrorCamera)
 
 type Option = { value: any, text: string }
 type Row = { key: string, title: string, options: { Option } }
@@ -187,12 +187,12 @@ function SettingsMenu.open()
 		refresh(ROWS[i], button)
 	end
 	panel.Visible = true
-	FirstPersonCamera.setCursorFree("settings", true)
+	HorrorCamera.setCursorFree("settings", true)
 end
 
 function SettingsMenu.close()
 	panel.Visible = false
-	FirstPersonCamera.setCursorFree("settings", false)
+	HorrorCamera.setCursorFree("settings", false)
 end
 
 function SettingsMenu.start()

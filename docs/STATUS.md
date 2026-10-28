@@ -1,6 +1,6 @@
 # Status do M1: Fundação visual e de conforto
 
-Branch: `m1-foundation`. Critérios de conclusão conforme `ROADMAP_Childhood.md`.
+Branch: `nicolas-camera-vhs` (câmera `HorrorCamera` e `VhsFilter` do Nicolas no lugar das implementações anteriores). Critérios de conclusão conforme `ROADMAP_Childhood.md`.
 
 ## 1. Critérios de conclusão
 
@@ -10,7 +10,7 @@ Branch: `m1-foundation`. Critérios de conclusão conforme `ROADMAP_Childhood.md
 | 2 | Mudar o Medo no servidor muda o VHS sem salto (cerca de 0,4 s) | Interpolação e `sampleFear` implementados; a lógica de faixas foi verificada. NÃO VERIFICADO em jogo |
 | 3 | Cada efeito tem opção de desligar e funciona | Implementado: moldura, scanlines, vinheta, cor, blur (normal, reduzido, desligado) e movimento. NÃO VERIFICADO em jogo |
 | 4 | Aviso de fotossensibilidade antes de qualquer cena | Implementado (`ContentNotice`). NÃO VERIFICADO em jogo |
-| 5 | Nenhum efeito pisca mais de 3 vezes por segundo | Por construção, o único elemento intermitente é o ponto REC, a 1 Hz. NÃO MEDIDO |
+| 5 | Nenhum efeito pisca mais de 3 vezes por segundo | Por construção, o único elemento intermitente é o ponto REC, a cerca de 1,2 Hz (período de 0,8 s), além do ruído e do glitch do filtro, que dependem de "reduzir movimento". NÃO MEDIDO |
 
 ## 2. Verificações executadas
 
@@ -44,6 +44,9 @@ Branch: `m1-foundation`. Critérios de conclusão conforme `ROADMAP_Childhood.md
 
 - P5 (celular de referência e meta de FPS): os tetos de blur (24, 14 e 6) e o limite de 28 FPS da seleção automática são provisórios.
 - Volume: não entrou no M1, pois ainda não há áudio. Entra junto com os primeiros sons.
+- Perfis de qualidade agora afetam só a contagem de scanlines e o FPS do ruído; o teto de blur vem do `HorrorCamera` e o menu escala (normal, reduzido 0,4, desligado).
+- Engrenagem e menu P do `VhsFilter` foram removidos; o menu único é o `SettingsMenu` (tecla O).
+- Ruído e glitch ainda não seguem o Medo (M2).
 - Idioma dos textos de interface: assumido português, pois o GDD não define.
 - Scanlines, vinheta e moldura são procedurais (instâncias de GUI), porque não há texturas enviadas ao Roblox. Trocar por imagens pré-preparadas é uma otimização possível depois de medir no celular.
 

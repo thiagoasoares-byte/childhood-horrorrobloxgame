@@ -23,7 +23,7 @@ Ordem fixa: M1, M2, M3, M4, M5, M6. Os milestones M5 e M6 só começam depois do
 
 - **Objetivo:** primeira pessoa com câmera própria (bob, inclinação ao girar, variação de FOV, corpo visível sem a cabeça), pilha VHS P0, blur de câmera, Medo no servidor e interpolado no cliente, aviso de fotossensibilidade e configurações de acessibilidade.
 - **Sistemas:** câmera, VHS, Medo, acessibilidade, perfis de qualidade.
-- **Módulos que mudam:** `shared/VisualConfig` (constantes por faixa de Medo e por perfil), `shared/Remotes` (`FearChanged`, `SettingsChanged`), `server/FearService` (por jogador, clamp, replicação), `server/init.server`. Novos: `client/FirstPersonCamera`, `client/CameraMotionBlur`, `client/VhsOverlay`, `client/FearVisualController`, `client/AccessibilitySettings`, `client/QualityProfile`, `client/ContentNotice`.
+- **Módulos que mudam:** `shared/VisualConfig` (constantes por faixa de Medo e por perfil), `shared/Remotes` (`FearChanged`, `SettingsChanged`), `server/FearService` (por jogador, clamp, replicação), `server/init.server`. Novos: `client/HorrorCamera`, `client/VhsFilter`, `client/FearVisualController`, `client/AccessibilitySettings`, `client/QualityProfile`, `client/ContentNotice`.
 - **Dependências:** P5 (celular de referência). Sem persistência no M1 (D20). Renomear o projeto Rojo.
 - **Critérios de conclusão:**
   1. Pilha P0 funciona nos três perfis de qualidade (GDD 9.1, 9.4).
@@ -99,7 +99,7 @@ Ordem fixa: M1, M2, M3, M4, M5, M6. Os milestones M5 e M6 só começam depois do
 
 - **Objetivo:** Praça com Mímicos, Baseplate, votação e finais, posterização aproximada, aberração e publicação.
 - **Sistemas:** Mímicos sociais, votação, finais, P2 do VHS, publicação.
-- **Módulos que mudam:** `server/CustomerAppearanceService` (Mímicos), `server/PhaseService`, `client/VhsOverlay` (aberração e posterização aproximadas), `shared/Remotes` (`VoteCast`). Novos: `server/VoteService`, `server/FinalService`, `server/PlazaBuilder`, `client/FinalScenes`.
+- **Módulos que mudam:** `server/CustomerAppearanceService` (Mímicos), `server/PhaseService`, `client/VhsFilter` (aberração e posterização aproximadas), `shared/Remotes` (`VoteCast`). Novos: `server/VoteService`, `server/FinalService`, `server/PlazaBuilder`, `client/FinalScenes`.
 - **Dependências:** M5; P3 (classificação), P9 (monetização).
 - **Critérios de conclusão:**
   1. Os três finais são alcançáveis; o secreto só com a condição.
@@ -129,9 +129,8 @@ Ordem fixa: M1, M2, M3, M4, M5, M6. Os milestones M5 e M6 só começam depois do
 
 | Módulo | Lado | Função | Milestone |
 |---|---|---|---|
-| `client/FirstPersonCamera` | Client | Câmera scriptable em primeira pessoa: bob, inclinação, FOV, corpo visível sem a cabeça | M1 |
-| `client/CameraMotionBlur` | Client | `BlurEffect` ∝ velocidade angular, com teto | M1 |
-| `client/VhsOverlay` | Client | Pilha VHS em camadas | M1, M6 |
+| `client/HorrorCamera` | Client | Primeira pessoa scriptable (bob, FOV, corpo visível), letterbox, mira e `BlurEffect` por velocidade angular | M1 |
+| `client/VhsFilter` | Client | Pilha VHS em camadas (moldura REC, scanlines, vinheta, ruído, grade de cor) | M1, M6 |
 | `client/FearVisualController` | Client | Interpola o Medo e ajusta o VHS | M1 |
 | `client/AccessibilitySettings` | Client | Opções de reduzir efeitos, volume, brilho | M1 |
 | `client/QualityProfile` | Client | Perfis Alto, Médio, Baixo | M1 |
