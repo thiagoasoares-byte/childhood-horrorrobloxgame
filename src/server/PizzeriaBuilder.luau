@@ -81,7 +81,10 @@ end
 
 local PizzeriaBuilder = {}
 
-function PizzeriaBuilder.build()
+-- The kitchen row stands in front of the pizzeria, inside the arrival zone, until the building has an interior.
+PizzeriaBuilder.KITCHEN_ORIGIN = Vector3.new(PIZZERIA_X - 20, 0, 0)
+
+function PizzeriaBuilder.build(): Folder
 	for _, old in { "Map", "Zones" } do
 		local existing = workspace:FindFirstChild(old)
 		if existing then
@@ -140,6 +143,7 @@ function PizzeriaBuilder.build()
 
 	map.Parent = workspace
 	zones.Parent = workspace
+	return map
 end
 
 return PizzeriaBuilder

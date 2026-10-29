@@ -61,7 +61,8 @@ Branch: `nicolas-camera-vhs` (câmera `HorrorCamera` e `VhsFilter` do Nicolas no
 |---|---|
 | 2.1 `PhaseService` e `NightDirector` | Escrito. NÃO VERIFICADO em jogo |
 | 2.2 `PizzeriaBuilder` | Escrito. Usa `ServerStorage.MapKit` quando existe e blocos de mesmo tamanho quando não. NÃO VERIFICADO em jogo |
-| 2.3 a 2.5 | Pendentes |
+| 2.3 Pedidos, estações, forno e `Hud` | Escrito. NÃO VERIFICADO em jogo |
+| 2.4 e 2.5 | Pendentes |
 
 - Os modelos do kit estão em `assets/models` (FBX) e `assets/blender`. Falta importar no Studio e colocar em `ServerStorage.MapKit` com os nomes `SM_*`.
 - Distâncias do trajeto (casa 0, parquinho 180, pizzaria 400 studs) são provisórias até medir o tempo de caminhada.

@@ -3,6 +3,7 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local FearService = require(script.Parent.FearService)
+local OrderService = require(script.Parent.OrderService)
 local PhaseService = require(script.Parent.PhaseService)
 local Remotes = require(ReplicatedStorage.Shared.Remotes)
 local VisualConfig = require(ReplicatedStorage.Shared.VisualConfig)
@@ -36,6 +37,7 @@ function SettingsService.start()
 		if isFirst then
 			FearService.sync(player)
 			PhaseService.sync(player)
+			OrderService.sync(player)
 		end
 	end)
 
