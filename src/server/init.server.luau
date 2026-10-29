@@ -1,4 +1,6 @@
 --!strict
+local ConsentService = require(script.ConsentService)
+local CustomerAppearanceService = require(script.CustomerAppearanceService)
 local FearService = require(script.FearService)
 local NightDirector = require(script.NightDirector)
 local OrderService = require(script.OrderService)
@@ -7,6 +9,8 @@ local PizzeriaBuilder = require(script.PizzeriaBuilder)
 local SettingsService = require(script.SettingsService)
 
 FearService.start()
+ConsentService.start()
+CustomerAppearanceService.start()
 SettingsService.start()
 local map = PizzeriaBuilder.build()
 PizzaStation.start(map, PizzeriaBuilder.KITCHEN_ORIGIN)

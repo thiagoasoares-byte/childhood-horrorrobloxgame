@@ -6,7 +6,14 @@ local function build(): Folder
 	local folder = Instance.new("Folder")
 	folder.Name = "Remotes"
 	for _, name in
-		{ "FearChanged", "SettingsChanged", "PhaseChanged", "OrdersChanged", "CarryChanged" }
+		{
+			"FearChanged",
+			"SettingsChanged",
+			"PhaseChanged",
+			"OrdersChanged",
+			"CarryChanged",
+			"ConsentChanged",
+		}
 	do
 		local remote = Instance.new("RemoteEvent")
 		remote.Name = name
@@ -26,4 +33,5 @@ return {
 	PhaseChanged = folder:WaitForChild("PhaseChanged") :: RemoteEvent,
 	OrdersChanged = folder:WaitForChild("OrdersChanged") :: RemoteEvent,
 	CarryChanged = folder:WaitForChild("CarryChanged") :: RemoteEvent,
+	ConsentChanged = folder:WaitForChild("ConsentChanged") :: RemoteEvent,
 }

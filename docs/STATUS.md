@@ -62,7 +62,20 @@ Branch: `nicolas-camera-vhs` (câmera `HorrorCamera` e `VhsFilter` do Nicolas no
 | 2.1 `PhaseService` e `NightDirector` | Escrito. NÃO VERIFICADO em jogo |
 | 2.2 `PizzeriaBuilder` | Escrito. Usa `ServerStorage.MapKit` quando existe e blocos de mesmo tamanho quando não. NÃO VERIFICADO em jogo |
 | 2.3 Pedidos, estações, forno e `Hud` | Escrito. NÃO VERIFICADO em jogo |
-| 2.4 e 2.5 | Pendentes |
+| 2.4 Consentimento, opt-out e clientes genéricos | Escrito. NÃO VERIFICADO em jogo |
+| 2.5 Persistência e 1 jogador | Pendente |
 
 - Os modelos do kit estão em `assets/models` (FBX) e `assets/blender`. Falta importar no Studio e colocar em `ServerStorage.MapKit` com os nomes `SM_*`.
 - Distâncias do trajeto (casa 0, parquinho 180, pizzaria 400 studs) são provisórias até medir o tempo de caminhada.
+
+### 4.1 Dono dos remotes do M2
+
+| Remote | Dono no servidor |
+|---|---|
+| `PhaseChanged` | `PhaseService` |
+| `OrdersChanged` e `CarryChanged` | `OrderService` e `PizzaStation` |
+| `ConsentChanged` (cliente para servidor) | `ConsentService` (valida tipo booleano e limita a taxa) |
+
+- Jogador que ainda não respondeu conta como opt-out. Clientes ficam genéricos até a primeira mensagem do cliente.
+- `FRIEND_APPEARANCE_ENABLED` em `CustomerAppearanceService` está `false`: a aparência de amigos (D18) só liga depois da revisão de políticas. Com `false`, nenhuma aparência de terceiro é carregada.
+- Nameplates dos jogadores e dos clientes estão desligadas. O chat do Roblox continua mostrando nomes e não é controlado por este código.
