@@ -82,12 +82,9 @@ function ContentNotice.show()
 
 	local consent = button(content, Consent.label(), UDim.new(1, 0))
 	consent.LayoutOrder = 3
-	consent.Activated:Connect(Consent.toggle)
-	local label = Consent.Changed:Connect(function()
+	consent.Activated:Connect(function()
+		Consent.toggle()
 		consent.Text = Consent.label()
-	end)
-	gui.Destroying:Connect(function()
-		label:Disconnect()
 	end)
 
 	local buttons = Instance.new("Frame")

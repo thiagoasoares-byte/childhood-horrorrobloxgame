@@ -63,7 +63,7 @@ Branch: `nicolas-camera-vhs` (câmera `HorrorCamera` e `VhsFilter` do Nicolas no
 | 2.2 `PizzeriaBuilder` | Escrito. Usa `ServerStorage.MapKit` quando existe e blocos de mesmo tamanho quando não. NÃO VERIFICADO em jogo |
 | 2.3 Pedidos, estações, forno e `Hud` | Escrito. NÃO VERIFICADO em jogo |
 | 2.4 Consentimento, opt-out e clientes genéricos | Escrito. NÃO VERIFICADO em jogo |
-| 2.5 Persistência (`PreferenceStore`) e 1 jogador | Escrito. NÃO VERIFICADO em jogo |
+| 2.5 Persistência e 1 jogador | Pendente |
 
 - Os modelos do kit estão em `assets/models` (FBX) e `assets/blender`. Falta importar no Studio e colocar em `ServerStorage.MapKit` com os nomes `SM_*`.
 - Distâncias do trajeto (casa 0, parquinho 180, pizzaria 400 studs) são provisórias até medir o tempo de caminhada.
@@ -74,17 +74,8 @@ Branch: `nicolas-camera-vhs` (câmera `HorrorCamera` e `VhsFilter` do Nicolas no
 |---|---|
 | `PhaseChanged` | `PhaseService` |
 | `OrdersChanged` e `CarryChanged` | `OrderService` e `PizzaStation` |
-| `PrefsLoaded` (servidor para cliente) | `SettingsService` (envia o registro salvo no primeiro contato) |
 | `ConsentChanged` (cliente para servidor) | `ConsentService` (valida tipo booleano e limita a taxa) |
 
 - Jogador que ainda não respondeu conta como opt-out. Clientes ficam genéricos até a primeira mensagem do cliente.
 - `FRIEND_APPEARANCE_ENABLED` em `CustomerAppearanceService` está `false`: a aparência de amigos (D18) só liga depois da revisão de políticas. Com `false`, nenhuma aparência de terceiro é carregada.
 - Nameplates dos jogadores e dos clientes estão desligadas. O chat do Roblox continua mostrando nomes e não é controlado por este código.
-
-### 4.2 Persistência (D20)
-
-- Dono único: `server/PreferenceStore`. DataStore `PlayerPrefs_v1`, chave `u_<UserId>`, registro `{ v = 1, consent = { optOut }, access = { ... } }`.
-- Leitura com 3 tentativas. Se falhar, a sessão usa os padrões e não grava, para não apagar dados reais. Registro com versão desconhecida ou campo inválido vale como "sem registro".
-- Gravação 10 s depois da última mudança, na saída do jogador e no fechamento do servidor. Nada de aparência nem `UserId` de amigos é gravado.
-- No Studio, o DataStore só funciona com a API habilitada nas configurações do jogo publicado; sem isso a leitura falha e nada é salvo.
-- 1 jogador (D21): `OrderService` limita pedidos simultâneos a 1 com 1 jogador, e o `NightDirector` já avança com um jogador só.
