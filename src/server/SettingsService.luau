@@ -3,6 +3,7 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local FearService = require(script.Parent.FearService)
+local PhaseService = require(script.Parent.PhaseService)
 local Remotes = require(ReplicatedStorage.Shared.Remotes)
 local VisualConfig = require(ReplicatedStorage.Shared.VisualConfig)
 
@@ -34,6 +35,7 @@ function SettingsService.start()
 		-- The first valid message means the client is listening, so the current fear level can be delivered.
 		if isFirst then
 			FearService.sync(player)
+			PhaseService.sync(player)
 		end
 	end)
 
