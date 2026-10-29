@@ -22,6 +22,28 @@ local PLACEHOLDER_SIZE: { [string]: Vector3 } = {
 	SM_Streetlamp = Vector3.new(2.7, 12.1, 1),
 }
 
+-- The FBX import drops material colours, so each model gets one flat tint by name.
+local TINT: { [string]: Color3 } = {
+	SM_House = Color3.fromRGB(200, 182, 140),
+	SM_Pizzeria = Color3.fromRGB(214, 186, 120),
+	SM_Slide = Color3.fromRGB(150, 80, 50),
+	SM_Swing = Color3.fromRGB(130, 70, 45),
+	SM_Carousel = Color3.fromRGB(165, 55, 45),
+	SM_SpringRider = Color3.fromRGB(180, 60, 50),
+	SM_DeadTree = Color3.fromRGB(75, 55, 40),
+	SM_Statue = Color3.fromRGB(120, 120, 115),
+	SM_FenceSegment = Color3.fromRGB(110, 80, 55),
+	SM_Streetlamp = Color3.fromRGB(45, 45, 50),
+}
+
+local function tint(instance: Instance, color: Color3)
+	for _, descendant in { instance, table.unpack(instance:GetDescendants()) } do
+		if descendant:IsA("BasePart") then
+			descendant.Color = color
+		end
+	end
+end
+
 local function anchor(instance: Instance)
 	if instance:IsA("BasePart") then
 		instance.Anchored = true
@@ -67,6 +89,9 @@ local function place(
 		instance = part
 	end
 	anchor(instance)
+	if template and TINT[name] then
+		tint(instance, TINT[name])
+	end
 	instance.Name = name
 	instance.Parent = parent
 end
@@ -95,6 +120,12 @@ function PizzeriaBuilder.build(): Folder
 		if existing then
 			existing:Destroy()
 		end
+	end
+
+	-- The default Baseplate would z-fight with the map ground; removed at runtime only.
+	local baseplate = workspace:FindFirstChild("Baseplate")
+	if baseplate then
+		baseplate:Destroy()
 	end
 
 	local kit = ServerStorage:FindFirstChild(KIT_FOLDER) or ServerStorage

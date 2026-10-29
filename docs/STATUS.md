@@ -65,6 +65,7 @@ Branch: `nicolas-camera-vhs` (câmera `HorrorCamera` e `VhsFilter` do Nicolas no
 | 2.4 Consentimento, opt-out e clientes genéricos | Escrito. NÃO VERIFICADO em jogo |
 | 2.5 Persistência e 1 jogador | Pendente |
 
+- A pizza agora é montada arrastando ingredientes na mesa de preparo (`client/PizzaMaker`); o estado continua no servidor e o desenho da pizza só espelha o que o servidor diz que o jogador carrega.
 - Os modelos do kit estão em `assets/models` (FBX) e `assets/blender`. Falta importar no Studio e colocar em `ServerStorage.MapKit` com os nomes `SM_*`.
 - Distâncias do trajeto (casa 0, parquinho 180, pizzaria 400 studs) são provisórias até medir o tempo de caminhada.
 
@@ -74,6 +75,7 @@ Branch: `nicolas-camera-vhs` (câmera `HorrorCamera` e `VhsFilter` do Nicolas no
 |---|---|
 | `PhaseChanged` | `PhaseService` |
 | `OrdersChanged` e `CarryChanged` | `OrderService` e `PizzaStation` |
+| `PizzaAction` (cliente para servidor) e `PizzaMakerOpen` | `PizzaStation` (valida tipo, distância até a mesa, ordem das camadas e ritmo) |
 | `ConsentChanged` (cliente para servidor) | `ConsentService` (valida tipo booleano e limita a taxa) |
 
 - Jogador que ainda não respondeu conta como opt-out. Clientes ficam genéricos até a primeira mensagem do cliente.

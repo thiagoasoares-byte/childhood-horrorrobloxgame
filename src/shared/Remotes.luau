@@ -14,6 +14,8 @@ local function build(): Folder
 			"CarryChanged",
 			"ConsentChanged",
 			"PrefsLoaded",
+			"PizzaAction",
+			"PizzaMakerOpen",
 		}
 	do
 		local remote = Instance.new("RemoteEvent")
@@ -36,4 +38,6 @@ return {
 	CarryChanged = folder:WaitForChild("CarryChanged") :: RemoteEvent,
 	ConsentChanged = folder:WaitForChild("ConsentChanged") :: RemoteEvent,
 	PrefsLoaded = folder:WaitForChild("PrefsLoaded") :: RemoteEvent,
+	PizzaAction = folder:WaitForChild("PizzaAction") :: RemoteEvent,
+	PizzaMakerOpen = folder:WaitForChild("PizzaMakerOpen") :: RemoteEvent,
 }
