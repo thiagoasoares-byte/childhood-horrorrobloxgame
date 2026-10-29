@@ -75,6 +75,7 @@ Branch: `nicolas-camera-vhs` (câmera `HorrorCamera` e `VhsFilter` do Nicolas no
 |---|---|
 | `PhaseChanged` | `PhaseService` |
 | `OrdersChanged` e `CarryChanged` | `OrderService` e `PizzaStation` |
+| `SprintInput` (cliente para servidor) e `StaminaChanged` | `StaminaService` (dono da stamina e da velocidade; valida booleano e ritmo; o cliente só diz se a tecla está pressionada) |
 | `PizzaAction` (cliente para servidor) e `PizzaMakerOpen` | `PizzaStation` (valida tipo, distância até a mesa, ordem das camadas e ritmo) |
 | `ConsentChanged` (cliente para servidor) | `ConsentService` (valida tipo booleano e limita a taxa) |
 

@@ -16,6 +16,8 @@ local function build(): Folder
 			"PrefsLoaded",
 			"PizzaAction",
 			"PizzaMakerOpen",
+			"SprintInput",
+			"StaminaChanged",
 		}
 	do
 		local remote = Instance.new("RemoteEvent")
@@ -40,4 +42,6 @@ return {
 	PrefsLoaded = folder:WaitForChild("PrefsLoaded") :: RemoteEvent,
 	PizzaAction = folder:WaitForChild("PizzaAction") :: RemoteEvent,
 	PizzaMakerOpen = folder:WaitForChild("PizzaMakerOpen") :: RemoteEvent,
+	SprintInput = folder:WaitForChild("SprintInput") :: RemoteEvent,
+	StaminaChanged = folder:WaitForChild("StaminaChanged") :: RemoteEvent,
 }
