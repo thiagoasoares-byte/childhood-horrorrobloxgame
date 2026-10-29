@@ -187,8 +187,8 @@ consentButton.LayoutOrder = #ROWS + 1
 consentButton.Size = UDim2.new(1, -8, 0, TARGET)
 styleButton(consentButton, Consent.label())
 consentButton.Parent = list
-consentButton.Activated:Connect(function()
-	Consent.toggle()
+consentButton.Activated:Connect(Consent.toggle)
+Consent.Changed:Connect(function()
 	consentButton.Text = Consent.label()
 end)
 

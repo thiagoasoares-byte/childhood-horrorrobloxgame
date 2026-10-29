@@ -1,6 +1,7 @@
 --!strict
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
+local Consent = require(script.Parent.Consent)
 local HorrorCamera = require(script.Parent.HorrorCamera)
 local QualityProfile = require(script.Parent.QualityProfile)
 local Remotes = require(ReplicatedStorage.Shared.Remotes)
@@ -63,6 +64,19 @@ end
 
 -- The first message also tells the server this client is ready to receive the current fear level.
 function AccessibilitySettings.start()
+	Remotes.PrefsLoaded.OnClientEvent:Connect(function(raw: any, optOut: any)
+		local clean = VisualConfig.sanitizeSettings(raw)
+		if clean then
+			if clean.quality ~= settings.quality then
+				QualityProfile.setMode(clean.quality)
+			end
+			settings = clean
+			apply()
+		end
+		if type(optOut) == "boolean" then
+			Consent.load(optOut)
+		end
+	end)
 	QualityProfile.onChanged(apply)
 	apply()
 	Remotes.SettingsChanged:FireServer(settings)

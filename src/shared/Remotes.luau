@@ -34,4 +34,5 @@ return {
 	OrdersChanged = folder:WaitForChild("OrdersChanged") :: RemoteEvent,
 	CarryChanged = folder:WaitForChild("CarryChanged") :: RemoteEvent,
 	ConsentChanged = folder:WaitForChild("ConsentChanged") :: RemoteEvent,
+	PrefsLoaded = folder:WaitForChild("PrefsLoaded") :: RemoteEvent,
 }
