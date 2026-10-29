@@ -8,7 +8,7 @@ local HOME_X = 0
 local PARK_X = 180
 local PIZZERIA_X = 400
 
--- Stand-in sizes (studs) matching the Blender kit, used when ServerStorage.MapKit has no imported model of that name.
+-- Stand-in sizes (studs) matching the Blender kit, used when ServerStorage.MapKit (or ServerStorage itself) has no imported model of that name.
 local PLACEHOLDER_SIZE: { [string]: Vector3 } = {
 	SM_House = Vector3.new(18, 14, 16),
 	SM_Pizzeria = Vector3.new(37, 17, 28.5),
@@ -47,9 +47,14 @@ local function place(
 	local instance: Instance
 	if template and (template:IsA("Model") or template:IsA("BasePart")) then
 		instance = template:Clone()
+		-- The importer scales meshes by 100 and caps them at 2048 studs, so size comes from the stand-in height.
+		local targetHeight = PLACEHOLDER_SIZE[name].Y
 		if instance:IsA("Model") then
+			local _, size = instance:GetBoundingBox()
+			instance:ScaleTo(instance:GetScale() * targetHeight / size.Y)
 			instance:PivotTo(cframe)
 		elseif instance:IsA("BasePart") then
+			instance.Size *= targetHeight / instance.Size.Y
 			instance.CFrame = cframe * CFrame.new(0, instance.Size.Y / 2, 0)
 		end
 	else
@@ -92,7 +97,7 @@ function PizzeriaBuilder.build(): Folder
 		end
 	end
 
-	local kit = ServerStorage:FindFirstChild(KIT_FOLDER)
+	local kit = ServerStorage:FindFirstChild(KIT_FOLDER) or ServerStorage
 	local map = Instance.new("Folder")
 	map.Name = "Map"
 
