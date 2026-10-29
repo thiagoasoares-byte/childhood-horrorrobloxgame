@@ -13,6 +13,7 @@ local function build(): Folder
 			"OrdersChanged",
 			"CarryChanged",
 			"ConsentChanged",
+			"PrefsLoaded",
 		}
 	do
 		local remote = Instance.new("RemoteEvent")
@@ -34,4 +35,5 @@ return {
 	OrdersChanged = folder:WaitForChild("OrdersChanged") :: RemoteEvent,
 	CarryChanged = folder:WaitForChild("CarryChanged") :: RemoteEvent,
 	ConsentChanged = folder:WaitForChild("ConsentChanged") :: RemoteEvent,
+	PrefsLoaded = folder:WaitForChild("PrefsLoaded") :: RemoteEvent,
 }
