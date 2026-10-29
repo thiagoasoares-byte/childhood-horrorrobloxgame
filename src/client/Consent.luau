@@ -6,6 +6,7 @@ local Remotes = require(ReplicatedStorage.Shared.Remotes)
 local SEND_DELAY = 0.3 -- same coalescing as the settings, under the server rate limit
 
 local optOut = false
+local changed = Instance.new("BindableEvent")
 local sendQueued = false
 
 local function send()
