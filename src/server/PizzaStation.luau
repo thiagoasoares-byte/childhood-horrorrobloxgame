@@ -8,7 +8,8 @@ local Remotes = require(ReplicatedStorage.Shared.Remotes)
 
 local COOK_SECONDS = 12
 local OVEN_SLOTS = 2
-local DEBOUNCE = 0.3
+local DEBOUNCE = 0.2
+local PREP_RANGE = 14 -- studs from the prep table within which drops are accepted
 local STEP = 5
 
 type Carry = { stages: { string }, cooked: boolean }
@@ -19,13 +20,30 @@ local lastUse: { [Player]: number } = {}
 local oven: { Slot } = {}
 
 local STATIONS = {
-	{ kind = "dough", text = "Pegar massa", color = Color3.fromRGB(220, 205, 170) },
-	{ kind = "sauce", text = "Molho", color = Color3.fromRGB(170, 40, 30) },
-	{ kind = "cheese", text = "Queijo", color = Color3.fromRGB(230, 190, 70) },
-	{ kind = "pepperoni", text = "Calabresa", color = Color3.fromRGB(130, 40, 40) },
-	{ kind = "oven", text = "Forno", color = Color3.fromRGB(50, 50, 55) },
-	{ kind = "counter", text = "Entregar", color = Color3.fromRGB(150, 110, 70) },
+	{
+		kind = "prep",
+		text = "Montar pizza",
+		color = Color3.fromRGB(220, 205, 170),
+		size = Vector3.new(7, 3, 4),
+	},
+	{
+		kind = "oven",
+		text = "Forno",
+		color = Color3.fromRGB(50, 50, 55),
+		size = Vector3.new(4, 3, 4),
+	},
+	{
+		kind = "counter",
+		text = "Entregar",
+		color = Color3.fromRGB(150, 110, 70),
+		size = Vector3.new(4, 3, 4),
+	},
 }
+
+-- Ingredients are layered in this order, like the pizza itself.
+local LAYER = { dough = 1, sauce = 2, cheese = 3, pepperoni = 4 } :: { [string]: number }
+
+local prepPart: BasePart? = nil
 
 local function sendCarry(player: Player)
 	local carry = carrying[player]
@@ -52,7 +70,9 @@ local function use(player: Player, kind: string)
 	lastUse[player] = now
 
 	local carry = carrying[player]
-	if kind == "dough" then
+	if kind == "prep" then
+		Remotes.PizzaMakerOpen:FireClient(player)
+	elseif kind == "dough" then
 		if not carry then
 			setCarry(player, { stages = { "dough" }, cooked = false })
 		end
@@ -76,9 +96,12 @@ local function use(player: Player, kind: string)
 			OrderService.deliver(carry.stages)
 			setCarry(player, nil)
 		end
-	elseif carry and not carry.cooked and not table.find(carry.stages, kind) then
-		table.insert(carry.stages, kind)
-		sendCarry(player)
+	elseif carry and not carry.cooked and LAYER[kind] then
+		local last = carry.stages[#carry.stages]
+		if LAYER[kind] > (LAYER[last] or 0) then
+			table.insert(carry.stages, kind)
+			sendCarry(player)
+		end
 	end
 end
 
@@ -88,8 +111,11 @@ function PizzaStation.start(parent: Instance, origin: Vector3)
 	for i, station in STATIONS do
 		local part = Instance.new("Part")
 		part.Name = "Station_" .. station.kind
-		part.Size = Vector3.new(4, 3, 4)
+		part.Size = station.size
 		part.Position = origin + Vector3.new(0, 1.5, (i - 1) * STEP - (#STATIONS - 1) * STEP / 2)
+		if station.kind == "prep" then
+			prepPart = part
+		end
 		part.Anchored = true
 		part.Color = station.color
 		part.Material = Enum.Material.Concrete
@@ -106,6 +132,22 @@ function PizzaStation.start(parent: Instance, origin: Vector3)
 			use(player, station.kind)
 		end)
 	end
+
+	-- The drop comes from the client UI, so the kind, the distance and the pace are all checked here.
+	Remotes.PizzaAction.OnServerEvent:Connect(function(player: Player, kind: any)
+		if type(kind) ~= "string" or not LAYER[kind] or not prepPart then
+			return
+		end
+		local character = player.Character
+		local root = character and character:FindFirstChild("HumanoidRootPart")
+		if
+			root
+			and root:IsA("BasePart")
+			and (root.Position - prepPart.Position).Magnitude <= PREP_RANGE
+		then
+			use(player, kind)
+		end
+	end)
 
 	Players.PlayerRemoving:Connect(function(player)
 		carrying[player] = nil
