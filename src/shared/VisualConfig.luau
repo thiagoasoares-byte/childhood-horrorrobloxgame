@@ -35,7 +35,7 @@ local VisualConfig = {}
 
 VisualConfig.FEAR_MIN = 0
 VisualConfig.FEAR_MAX = 100
-VisualConfig.LETTERBOX_HEIGHT = 0.14 -- screen fraction of each black bar, shared by the camera and the REC label
+VisualConfig.LETTERBOX_HEIGHT = 0.119 -- screen fraction of each black bar, shared by the camera and the REC label
 
 -- Anchors sit at the middle of each GDD 9.5 band, so the value is exact at the centre and blends toward the neighbour.
 local ANCHORS: { { at: number, sample: FearSample } } = {

@@ -5,7 +5,7 @@ local RunService = game:GetService("RunService")
 local function build(): Folder
 	local folder = Instance.new("Folder")
 	folder.Name = "Remotes"
-	for _, name in { "FearChanged", "SettingsChanged" } do
+	for _, name in { "FearChanged", "SettingsChanged", "PhaseChanged" } do
 		local remote = Instance.new("RemoteEvent")
 		remote.Name = name
 		remote.Parent = folder
@@ -21,4 +21,5 @@ local folder = if RunService:IsServer()
 return {
 	FearChanged = folder:WaitForChild("FearChanged") :: RemoteEvent,
 	SettingsChanged = folder:WaitForChild("SettingsChanged") :: RemoteEvent,
+	PhaseChanged = folder:WaitForChild("PhaseChanged") :: RemoteEvent,
 }
