@@ -21,7 +21,13 @@ export type Record = {
 
 type Patch = { optOut: boolean?, access: VisualConfig.Settings? }
 
-local store = DataStoreService:GetDataStore(STORE_NAME)
+-- GetDataStore throws in an unpublished place, so a failure here means no persistence instead of a dead server script.
+local storeOk, store = pcall(function()
+	return DataStoreService:GetDataStore(STORE_NAME)
+end)
+if not storeOk then
+	warn("[PreferenceStore] DataStore unavailable; preferences will not be saved")
+end
 
 local loaded: { [Player]: Record? } = {}
 local ready: { [Player]: boolean } = {}
@@ -51,6 +57,11 @@ local function readRecord(raw: any): Record?
 end
 
 local function load(player: Player)
+	if not storeOk then
+		blocked[player] = true
+		ready[player] = true
+		return
+	end
 	for attempt = 1, LOAD_ATTEMPTS do
 		local ok, raw = pcall(function()
 			return store:GetAsync(keyFor(player))
