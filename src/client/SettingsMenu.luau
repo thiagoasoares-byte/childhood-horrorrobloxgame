@@ -3,6 +3,7 @@ local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 
 local AccessibilitySettings = require(script.Parent.AccessibilitySettings)
+local Consent = require(script.Parent.Consent)
 local HorrorCamera = require(script.Parent.HorrorCamera)
 
 type Option = { value: any, text: string }
@@ -179,6 +180,17 @@ for index, row in ROWS do
 		end
 	end)
 end
+
+local consentButton = Instance.new("TextButton")
+consentButton.Name = "consent"
+consentButton.LayoutOrder = #ROWS + 1
+consentButton.Size = UDim2.new(1, -8, 0, TARGET)
+styleButton(consentButton, Consent.label())
+consentButton.Parent = list
+consentButton.Activated:Connect(function()
+	Consent.toggle()
+	consentButton.Text = Consent.label()
+end)
 
 local SettingsMenu = {}
 

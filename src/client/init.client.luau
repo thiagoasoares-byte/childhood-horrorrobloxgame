@@ -1,5 +1,6 @@
 --!strict
 local AccessibilitySettings = require(script.AccessibilitySettings)
+local Consent = require(script.Consent)
 local ContentNotice = require(script.ContentNotice)
 local FearVisualController = require(script.FearVisualController)
 local HorrorCamera = require(script.HorrorCamera)
@@ -13,4 +14,5 @@ QualityProfile.start()
 AccessibilitySettings.start()
 SettingsMenu.start()
 Hud.start()
+Consent.start()
 ContentNotice.show()

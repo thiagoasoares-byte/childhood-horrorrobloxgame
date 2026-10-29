@@ -2,6 +2,7 @@
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 
+local Consent = require(script.Parent.Consent)
 local HorrorCamera = require(script.Parent.HorrorCamera)
 local SettingsMenu = require(script.Parent.SettingsMenu)
 
@@ -79,8 +80,15 @@ function ContentNotice.show()
 	text(content, "Aviso de conteúdo", 26, 1)
 	text(content, message(), 20, 2)
 
+	local consent = button(content, Consent.label(), UDim.new(1, 0))
+	consent.LayoutOrder = 3
+	consent.Activated:Connect(function()
+		Consent.toggle()
+		consent.Text = Consent.label()
+	end)
+
 	local buttons = Instance.new("Frame")
-	buttons.LayoutOrder = 3
+	buttons.LayoutOrder = 4
 	buttons.Size = UDim2.new(1, 0, 0, TARGET)
 	buttons.BackgroundTransparency = 1
 	buttons.Parent = content
