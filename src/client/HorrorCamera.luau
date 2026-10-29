@@ -49,7 +49,7 @@ end
 --------------------------------------------------------------------
 local CONFIG = {
 	-- Letterbox
-	BarHeight = VisualConfig.LETTERBOX_HEIGHT, -- fração da altura da tela por barra (0.14 = 14%)
+	BarHeight = VisualConfig.LETTERBOX_HEIGHT, -- fração da altura da tela por barra (0.119 = 11,9%)
 	BarIntroTime = 2.5, -- segundos para as barras "fecharem" ao entrar
 
 	-- Mira (bolinha central)
@@ -195,13 +195,10 @@ function HorrorCamera.start()
 		return 1
 	end
 
-	-- Partes escondidas na 1ª pessoa: cabeça, torso (R15 e R6) e acessórios.
-	-- Braços e pernas continuam visíveis.
+	-- Partes escondidas na 1ª pessoa: só cabeça e acessórios.
+	-- Torso, braços e pernas continuam visíveis e animam junto com o personagem.
 	local HIDE_NAMES = {
 		Head = true,
-		UpperTorso = true,
-		LowerTorso = true,
-		Torso = true,
 	}
 
 	local function considerPart(d)
