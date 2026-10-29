@@ -2,7 +2,7 @@
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 
-local FirstPersonCamera = require(script.Parent.FirstPersonCamera)
+local HorrorCamera = require(script.Parent.HorrorCamera)
 local SettingsMenu = require(script.Parent.SettingsMenu)
 
 local TARGET = 48 -- px, above the 44 px minimum touch target
@@ -95,15 +95,15 @@ function ContentNotice.show()
 
 	proceed.Activated:Connect(function()
 		gui:Destroy()
-		FirstPersonCamera.setCursorFree("notice", false)
+		HorrorCamera.setCursorFree("notice", false)
 	end)
 	settings.Activated:Connect(function()
 		gui:Destroy()
-		FirstPersonCamera.setCursorFree("notice", false)
+		HorrorCamera.setCursorFree("notice", false)
 		SettingsMenu.open()
 	end)
 
-	FirstPersonCamera.setCursorFree("notice", true)
+	HorrorCamera.setCursorFree("notice", true)
 	gui.Parent = Players.LocalPlayer:WaitForChild("PlayerGui")
 end
 
