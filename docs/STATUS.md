@@ -54,3 +54,14 @@ Branch: `nicolas-camera-vhs` (câmera `HorrorCamera` e `VhsFilter` do Nicolas no
 
 - O servidor guarda as configurações por jogador só em memória (D20).
 - Ruído, tracking glitch, aberração e posterização ficam para M2 e M6; as constantes por faixa já estão em `VisualConfig`.
+
+## 4. M2 em andamento
+
+| Passo | Estado |
+|---|---|
+| 2.1 `PhaseService` e `NightDirector` | Escrito. NÃO VERIFICADO em jogo |
+| 2.2 `PizzeriaBuilder` | Escrito. Usa `ServerStorage.MapKit` quando existe e blocos de mesmo tamanho quando não. NÃO VERIFICADO em jogo |
+| 2.3 a 2.5 | Pendentes |
+
+- Os modelos do kit estão em `assets/models` (FBX) e `assets/blender`. Falta importar no Studio e colocar em `ServerStorage.MapKit` com os nomes `SM_*`.
+- Distâncias do trajeto (casa 0, parquinho 180, pizzaria 400 studs) são provisórias até medir o tempo de caminhada.
